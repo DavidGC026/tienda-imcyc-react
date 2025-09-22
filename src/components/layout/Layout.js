@@ -25,16 +25,20 @@ import {
   Assignment,
   ShoppingCart,
   LibraryBooks,
-  Person
+  Person,
+  LightMode,
+  DarkMode
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const { cartCount } = useCart();
+  const { isDarkMode, toggleTheme } = useTheme();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [servicesAnchorEl, setServicesAnchorEl] = React.useState(null);
 
@@ -68,12 +72,14 @@ const Layout = ({ children }) => {
   return (
     <>
       <AppBar position="sticky" sx={{ 
-        background: 'rgba(255, 255, 255, 0.95)',
+        background: (theme) => theme.palette.mode === 'dark' 
+          ? 'rgba(30, 30, 30, 0.95)' 
+          : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-        color: '#2d3748'
+        borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+        color: (theme) => theme.palette.text.primary
       }}>
         <Toolbar>
           <Typography
@@ -83,7 +89,7 @@ const Layout = ({ children }) => {
             sx={{
               flexGrow: 1,
               textDecoration: 'none',
-              color: '#2d3748',
+              color: (theme) => theme.palette.text.primary,
               fontWeight: 800,
               fontSize: '1.5rem',
               display: 'flex',
@@ -220,13 +226,31 @@ const Layout = ({ children }) => {
               </MenuItem>
             </Menu>
 
+            {/* Botón de alternancia de tema */}
+            <IconButton
+              onClick={toggleTheme}
+              sx={{
+                color: (theme) => theme.palette.text.primary,
+                ml: 1,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background: 'rgba(102, 126, 234, 0.1)',
+                  color: '#667eea',
+                  transform: 'translateY(-1px) rotate(180deg)'
+                }
+              }}
+              title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+              {isDarkMode ? <LightMode /> : <DarkMode />}
+            </IconButton>
+
             {/* Carrito de compras */}
             {isAuthenticated && (
               <IconButton
                 component={Link}
                 to="/cart"
                 sx={{
-                  color: '#4a5568',
+                  color: (theme) => theme.palette.text.primary,
                   ml: 1,
                   transition: 'all 0.3s ease',
                   '&:hover': {

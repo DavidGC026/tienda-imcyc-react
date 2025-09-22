@@ -350,7 +350,7 @@ const ProductsPage = () => {
                     
                     {/* Sección inferior: stock/disponibilidad y precio */}
                     <Box sx={{ height: '4em', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      {currentSection === 'webinars' ? (
+                      {(currentSection === 'webinars' || currentSection === 'ebooks') ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 0.5 }}>
                           <Chip 
                             label="Disponible"
@@ -404,17 +404,17 @@ const ProductsPage = () => {
                       variant="contained" 
                       fullWidth
                       startIcon={<ShoppingCart />}
-                      disabled={currentSection !== 'webinars' && (!product.stock || product.stock === 0) || cartLoading}
+                      disabled={(currentSection !== 'webinars' && currentSection !== 'ebooks') && (!product.stock || product.stock === 0) || cartLoading}
                       onClick={() => handleAddToCart(product)}
                       sx={{
-                        background: (currentSection === 'webinars' || product.stock > 0)
+                        background: (currentSection === 'webinars' || currentSection === 'ebooks' || product.stock > 0)
                           ? 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)' 
                           : 'grey.400',
                         fontWeight: 'bold',
                         py: 0.8,
                         fontSize: '0.75rem',
                         '&:hover': {
-                          background: (currentSection === 'webinars' || product.stock > 0)
+                          background: (currentSection === 'webinars' || currentSection === 'ebooks' || product.stock > 0)
                             ? 'linear-gradient(45deg, #5a6fd8 30%, #6a42a0 90%)' 
                             : 'grey.400'
                         }
@@ -422,6 +422,7 @@ const ProductsPage = () => {
                     >
                       {cartLoading ? 'Agregando...' : 
                         currentSection === 'webinars' ? 'Inscribirse' : 
+                        currentSection === 'ebooks' ? 'Descargar' : 
                         (product.stock > 0 ? 'Agregar al Carrito' : 'Agotado')}
                     </Button>
                   </CardActions>

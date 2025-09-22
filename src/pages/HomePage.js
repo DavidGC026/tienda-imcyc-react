@@ -328,24 +328,30 @@ const HomePage = () => {
                 justifyContent: 'space-between',
                 height: '100%'
               }}>
-                {/* Logo IMCYC */}
+                {/* Logo Construremates */}
                 <Box 
                   sx={{
                     width: '70px',
                     height: '70px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    margin: '0 auto 1rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    margin: '0 auto 1rem',
-                    color: 'white',
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
                     boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)'
                   }}
                 >
-                  IMCYC
+                  <img 
+                    src="https://grabador.imcyc.com/construremates/images/logotipo2.png" 
+                    alt="Construremates Logo" 
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      borderRadius: '8px'
+                    }}
+                  />
                 </Box>
                 
                 {/* Descripción */}
@@ -364,7 +370,7 @@ const HomePage = () => {
                       textOverflow: 'ellipsis'
                     }}
                   >
-                    Ofertas y remates en equipo y productos IMCYC.
+                    Construremates - Ofertas y remates en equipo y productos IMCYC.
                   </Typography>
                 </Box>
                 
@@ -389,7 +395,7 @@ const HomePage = () => {
                       }
                     }}
                   >
-                    VISITAR IMCYC OUTLET
+                    VISITAR CONSTRUREMATES
                   </Button>
                 </Box>
               </CardContent>
