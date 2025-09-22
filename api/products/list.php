@@ -11,7 +11,7 @@ $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 $search = $_GET['search'] ?? '';
 
 // Validar sección
-$allowedSections = ['mercancia', 'libros', 'ebooks'];
+$allowedSections = ['mercancia', 'libros', 'ebooks', 'webinars'];
 if (!in_array($section, $allowedSections)) {
     apiError('Sección no válida');
 }
@@ -128,6 +128,55 @@ try {
             }
             
             $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            break;
+            
+        case 'webinars':
+            $whereClause = $search ? "WHERE (titulo LIKE ? OR descripcion LIKE ? OR categoria LIKE ?)" : "WHERE activo = 1";
+            $searchParam = $search ? "%$search%" : null;
+            
+            if ($search) {
+                $countSql = "SELECT COUNT(*) FROM webinars $whereClause";
+                $sql = "SELECT webinar_id as id, titulo as nombre, descripcion, precio, categoria, fecha, duracion, imagen 
+                       FROM webinars $whereClause 
+                       ORDER BY fecha DESC 
+                       LIMIT ? OFFSET ?";
+                
+                $countStmt = $pdo->prepare($countSql);
+                $countStmt->execute([$searchParam, $searchParam, $searchParam]);
+                $totalCount = $countStmt->fetchColumn();
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindParam(1, $searchParam, PDO::PARAM_STR);
+                $stmt->bindParam(2, $searchParam, PDO::PARAM_STR);
+                $stmt->bindParam(3, $searchParam, PDO::PARAM_STR);
+                $stmt->bindParam(4, $limit, PDO::PARAM_INT);
+                $stmt->bindParam(5, $offset, PDO::PARAM_INT);
+                $stmt->execute();
+            } else {
+                $countSql = "SELECT COUNT(*) FROM webinars WHERE activo = 1";
+                $sql = "SELECT webinar_id as id, titulo as nombre, descripcion, precio, categoria, fecha, duracion, imagen 
+                       FROM webinars WHERE activo = 1 
+                       ORDER BY fecha DESC 
+                       LIMIT ? OFFSET ?";
+                
+                $countStmt = $pdo->prepare($countSql);
+                $countStmt->execute();
+                $totalCount = $countStmt->fetchColumn();
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindParam(1, $limit, PDO::PARAM_INT);
+                $stmt->bindParam(2, $offset, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+            
+            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Formatear fecha para webinars
+            foreach ($products as &$product) {
+                if (isset($product['fecha'])) {
+                    $product['fecha_formateada'] = date('d/m/Y H:i', strtotime($product['fecha']));
+                }
+            }
             break;
     }
     

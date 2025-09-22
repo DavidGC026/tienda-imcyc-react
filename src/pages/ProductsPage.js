@@ -106,7 +106,8 @@ const ProductsPage = () => {
   const sections = [
     { value: 'mercancia', label: 'Mercancía' },
     { value: 'libros', label: 'Libros' },
-    { value: 'ebooks', label: 'E-books' }
+    { value: 'ebooks', label: 'E-books' },
+    { value: 'webinars', label: 'Webinars' }
   ];
 
   useEffect(() => {
@@ -143,7 +144,8 @@ const ProductsPage = () => {
       return;
     }
 
-    if (!product.stock || product.stock === 0) {
+    // Para webinars, no verificar stock tradicional
+    if (currentSection !== 'webinars' && (!product.stock || product.stock === 0)) {
       alert('Producto sin stock disponible');
       return;
     }
@@ -274,9 +276,44 @@ const ProductsPage = () => {
                       </Typography>
                     </Box>
                     
-                    {/* Sección media: autor y descripción */}
+                    {/* Sección media: autor/fecha y descripción */}
                     <Box sx={{ height: '6em', mb: 0.5, overflow: 'hidden' }}>
-                      {product.autor && (
+                      {/* Mostrar autor para ebooks o fecha para webinars */}
+                      {currentSection === 'webinars' && product.fecha_formateada && (
+                        <Typography 
+                          variant="subtitle2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            fontStyle: 'italic', 
+                            mb: 0.3, 
+                            fontSize: '0.7rem',
+                            height: '1em',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          📅 {product.fecha_formateada}
+                        </Typography>
+                      )}
+                      
+                      {/* Mostrar duración para webinars */}
+                      {currentSection === 'webinars' && product.duracion && (
+                        <Typography 
+                          variant="subtitle2" 
+                          color="text.secondary" 
+                          sx={{ 
+                            fontStyle: 'italic', 
+                            mb: 0.3, 
+                            fontSize: '0.7rem',
+                            height: '1em',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          ⏱️ {product.duracion}
+                        </Typography>
+                      )}
+                      
+                      {/* Mostrar autor para ebooks */}
+                      {currentSection === 'ebooks' && product.autor && (
                         <Typography 
                           variant="subtitle2" 
                           color="text.secondary" 
@@ -311,20 +348,32 @@ const ProductsPage = () => {
                       </Typography>
                     </Box>
                     
-                    {/* Sección inferior: stock y precio */}
+                    {/* Sección inferior: stock/disponibilidad y precio */}
                     <Box sx={{ height: '4em', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                          Stock: {product.stock || 0}
-                        </Typography>
-                        <Chip 
-                          label={product.stock > 10 ? 'Disponible' : product.stock > 0 ? 'Pocos' : 'Agotado'}
-                          size="small"
-                          color={product.stock > 10 ? 'success' : product.stock > 0 ? 'warning' : 'error'}
-                          variant="outlined"
-                          sx={{ fontSize: '0.6rem', height: '18px' }}
-                        />
-                      </Box>
+                      {currentSection === 'webinars' ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 0.5 }}>
+                          <Chip 
+                            label="Disponible"
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                            sx={{ fontSize: '0.6rem', height: '18px' }}
+                          />
+                        </Box>
+                      ) : (
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                            Stock: {product.stock || 0}
+                          </Typography>
+                          <Chip 
+                            label={product.stock > 10 ? 'Disponible' : product.stock > 0 ? 'Pocos' : 'Agotado'}
+                            size="small"
+                            color={product.stock > 10 ? 'success' : product.stock > 0 ? 'warning' : 'error'}
+                            variant="outlined"
+                            sx={{ fontSize: '0.6rem', height: '18px' }}
+                          />
+                        </Box>
+                      )}
                       
                       {/* Precio */}
                       <Typography 
@@ -355,23 +404,25 @@ const ProductsPage = () => {
                       variant="contained" 
                       fullWidth
                       startIcon={<ShoppingCart />}
-                      disabled={!product.stock || product.stock === 0 || cartLoading}
+                      disabled={currentSection !== 'webinars' && (!product.stock || product.stock === 0) || cartLoading}
                       onClick={() => handleAddToCart(product)}
                       sx={{
-                        background: product.stock > 0 
+                        background: (currentSection === 'webinars' || product.stock > 0)
                           ? 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)' 
                           : 'grey.400',
                         fontWeight: 'bold',
                         py: 0.8,
                         fontSize: '0.75rem',
                         '&:hover': {
-                          background: product.stock > 0 
+                          background: (currentSection === 'webinars' || product.stock > 0)
                             ? 'linear-gradient(45deg, #5a6fd8 30%, #6a42a0 90%)' 
                             : 'grey.400'
                         }
                       }}
                     >
-                      {cartLoading ? 'Agregando...' : (product.stock > 0 ? 'Agregar al Carrito' : 'Agotado')}
+                      {cartLoading ? 'Agregando...' : 
+                        currentSection === 'webinars' ? 'Inscribirse' : 
+                        (product.stock > 0 ? 'Agregar al Carrito' : 'Agotado')}
                     </Button>
                   </CardActions>
                 </Card>
