@@ -44,11 +44,6 @@ const HomePage = () => {
   ];
 
   const handleServiceClick = (section) => {
-    if (section === 'webinars') {
-      // Para webinars, podrías redirigir a una página externa o mostrar un mensaje
-      console.log('Redirigiendo a webinars...');
-      return;
-    }
     navigate('/products', { state: { initialSection: section } });
   };
 
