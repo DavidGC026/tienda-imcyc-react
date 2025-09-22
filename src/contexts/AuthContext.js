@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         setUser(testUser);
         setIsAuthenticated(true);
         // Usar JWT válido para el usuario de prueba
-        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJyb2wiOiJ1c3VhcmlvIiwiaWF0IjoxNzU4NTU2MTM1LCJleHAiOjE3NTkxNjA5MzV9.GeXo9yDO29XKGxS7sdcZGzGMu4qwjIYDAp0r7P9p5kQ';
+        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJyb2wiOiJ1c3VhcmlvIiwiaWF0IjoxNzU4NTU2ODkwLCJleHAiOjE3NTkxNjE2OTB9.H8zv2SP-ewjgOU1SuaZrcZyFrkottXrulZzpTMLk7-k';
         localStorage.setItem('authToken', validTestToken);
         
       } catch (error) {
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         setUser(testUser);
         setIsAuthenticated(true);
         // Usar JWT válido para el usuario de prueba
-        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJyb2wiOiJ1c3VhcmlvIiwiaWF0IjoxNzU4NTU2MTM1LCJleHAiOjE3NTkxNjA5MzV9.GeXo9yDO29XKGxS7sdcZGzGMu4qwjIYDAp0r7P9p5kQ';
+        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJyb2wiOiJ1c3VhcmlvIiwiaWF0IjoxNzU4NTU2ODkwLCJleHAiOjE3NTkxNjE2OTB9.H8zv2SP-ewjgOU1SuaZrcZyFrkottXrulZzpTMLk7-k';
         localStorage.setItem('authToken', validTestToken);
       } finally {
         setLoading(false);
