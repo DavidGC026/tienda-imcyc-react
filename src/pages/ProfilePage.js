@@ -13,7 +13,8 @@ import {
   Alert,
   CircularProgress,
   Divider,
-  IconButton
+  IconButton,
+  InputAdornment
 } from '@mui/material';
 import {
   Person,
@@ -23,7 +24,10 @@ import {
   LocationOn,
   Email,
   Phone,
-  AccountCircle
+  AccountCircle,
+  Lock,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -33,6 +37,12 @@ const ProfilePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
   
   const [profileData, setProfileData] = useState({
     nombreCompleto: '',
@@ -44,6 +54,11 @@ const ProfilePage = () => {
       codigoPostal: '',
       municipio: '',
       estado: ''
+    },
+    passwords: {
+      current: '',
+      new: '',
+      confirm: ''
     }
   });
 
@@ -124,6 +139,83 @@ const ProfilePage = () => {
     setError('');
     setSuccess('');
     // Recargar datos originales si es necesario
+  };
+
+  const handlePasswordVisibilityToggle = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
+  const handleChangePassword = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    // Validaciones
+    if (!profileData.passwords.current || !profileData.passwords.new || !profileData.passwords.confirm) {
+      setError('Todos los campos de contraseña son obligatorios');
+      setLoading(false);
+      return;
+    }
+
+    if (profileData.passwords.new !== profileData.passwords.confirm) {
+      setError('Las nuevas contraseñas no coinciden');
+      setLoading(false);
+      return;
+    }
+
+    if (profileData.passwords.new.length < 6) {
+      setError('La nueva contraseña debe tener al menos 6 caracteres');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Aquí irá la lógica para cambiar contraseña en la API
+      // await profileService.changePassword(profileData.passwords);
+      
+      // Simulación
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSuccess('Contraseña actualizada correctamente');
+      setIsChangingPassword(false);
+      
+      // Limpiar campos de contraseña
+      setProfileData(prev => ({
+        ...prev,
+        passwords: {
+          current: '',
+          new: '',
+          confirm: ''
+        }
+      }));
+      
+      // Limpiar mensaje después de 3 segundos
+      setTimeout(() => setSuccess(''), 3000);
+      
+    } catch (err) {
+      setError('Error al cambiar la contraseña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelPasswordChange = () => {
+    setIsChangingPassword(false);
+    setError('');
+    setSuccess('');
+    
+    // Limpiar campos de contraseña
+    setProfileData(prev => ({
+      ...prev,
+      passwords: {
+        current: '',
+        new: '',
+        confirm: ''
+      }
+    }));
   };
 
   const getInitials = (name) => {
@@ -326,6 +418,151 @@ const ProfilePage = () => {
                 </TextField>
               </Grid>
             </Grid>
+          </Box>
+
+          {/* Seguridad - Cambio de Contraseña */}
+          <Box sx={{ mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Lock sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="h6" fontWeight="bold">
+                Cambiar Contraseña
+              </Typography>
+            </Box>
+
+            {!isChangingPassword ? (
+              <Box sx={{ textAlign: 'center', py: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Mantén tu cuenta segura actualizando tu contraseña regularmente
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Lock />}
+                  onClick={() => setIsChangingPassword(true)}
+                  sx={{
+                    borderColor: '#667eea',
+                    color: '#667eea',
+                    fontWeight: 'bold',
+                    px: 3,
+                    '&:hover': {
+                      borderColor: '#5a6fd8',
+                      backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                    }
+                  }}
+                >
+                  Cambiar Contraseña
+                </Button>
+              </Box>
+            ) : (
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Contraseña Actual"
+                    type={showPasswords.current ? 'text' : 'password'}
+                    value={profileData.passwords.current}
+                    onChange={(e) => handleInputChange('passwords.current', e.target.value)}
+                    variant="outlined"
+                    required
+                    InputProps={{
+                      startAdornment: <Lock sx={{ mr: 1, color: 'text.secondary' }} />,
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => handlePasswordVisibilityToggle('current')}
+                            edge="end"
+                          >
+                            {showPasswords.current ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Nueva Contraseña"
+                    type={showPasswords.new ? 'text' : 'password'}
+                    value={profileData.passwords.new}
+                    onChange={(e) => handleInputChange('passwords.new', e.target.value)}
+                    variant="outlined"
+                    required
+                    helperText="Mínimo 6 caracteres"
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => handlePasswordVisibilityToggle('new')}
+                            edge="end"
+                          >
+                            {showPasswords.new ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Confirmar Nueva Contraseña"
+                    type={showPasswords.confirm ? 'text' : 'password'}
+                    value={profileData.passwords.confirm}
+                    onChange={(e) => handleInputChange('passwords.confirm', e.target.value)}
+                    variant="outlined"
+                    required
+                    error={profileData.passwords.new !== profileData.passwords.confirm && profileData.passwords.confirm !== ''}
+                    helperText={profileData.passwords.new !== profileData.passwords.confirm && profileData.passwords.confirm !== '' ? 'Las contraseñas no coinciden' : ''}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => handlePasswordVisibilityToggle('confirm')}
+                            edge="end"
+                          >
+                            {showPasswords.confirm ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                    <Button
+                      variant="contained"
+                      startIcon={loading ? <CircularProgress size={20} /> : <Save />}
+                      onClick={handleChangePassword}
+                      disabled={loading}
+                      sx={{
+                        background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                        px: 4,
+                        py: 1,
+                        fontWeight: 'bold',
+                        '&:hover': {
+                          background: 'linear-gradient(45deg, #5a6fd8 30%, #6a42a0 90%)'
+                        }
+                      }}
+                    >
+                      {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      startIcon={<Cancel />}
+                      onClick={handleCancelPasswordChange}
+                      disabled={loading}
+                      sx={{ px: 4, py: 1, fontWeight: 'bold' }}
+                    >
+                      Cancelar
+                    </Button>
+                  </Box>
+                </Grid>
+              </Grid>
+            )}
           </Box>
 
           {/* Botones de acción */}
