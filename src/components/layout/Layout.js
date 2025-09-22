@@ -148,6 +148,8 @@ const Layout = ({ children }) => {
             {isAuthenticated && (
               <Button 
                 color="inherit" 
+                component={Link}
+                to="/mis-pedidos"
                 startIcon={<Assignment />}
                 sx={{
                   color: '#4a5568',
@@ -161,7 +163,6 @@ const Layout = ({ children }) => {
                     transform: 'translateY(-1px)'
                   }
                 }}
-                onClick={() => console.log('Ir a pedidos')}
               >
                 Mis Pedidos
               </Button>
