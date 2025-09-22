@@ -111,14 +111,14 @@ const Layout = ({ children }) => {
               to="/"
               startIcon={<Home />}
               sx={{
-                color: '#4a5568',
+                color: (theme) => theme.palette.info.main,
                 fontWeight: 500,
                 transition: 'all 0.3s ease',
                 borderRadius: '8px',
                 padding: '0.5rem 1rem',
                 '&:hover': {
                   background: 'rgba(102, 126, 234, 0.1)',
-                  color: '#667eea',
+                  color: (theme) => theme.palette.primary.main,
                   transform: 'translateY(-1px)'
                 }
               }}
@@ -134,14 +134,14 @@ const Layout = ({ children }) => {
                 to="/mi-biblioteca"
                 startIcon={<LibraryBooks />}
                 sx={{
-                  color: '#4a5568',
+                  color: (theme) => theme.palette.info.main,
                   fontWeight: 500,
                   transition: 'all 0.3s ease',
                   borderRadius: '8px',
                   padding: '0.5rem 1rem',
                   '&:hover': {
                     background: 'rgba(102, 126, 234, 0.1)',
-                    color: '#667eea',
+                    color: (theme) => theme.palette.primary.main,
                     transform: 'translateY(-1px)'
                   }
                 }}
@@ -158,14 +158,14 @@ const Layout = ({ children }) => {
                 to="/mis-pedidos"
                 startIcon={<Assignment />}
                 sx={{
-                  color: '#4a5568',
+                  color: (theme) => theme.palette.info.main,
                   fontWeight: 500,
                   transition: 'all 0.3s ease',
                   borderRadius: '8px',
                   padding: '0.5rem 1rem',
                   '&:hover': {
                     background: 'rgba(102, 126, 234, 0.1)',
-                    color: '#667eea',
+                    color: (theme) => theme.palette.primary.main,
                     transform: 'translateY(-1px)'
                   }
                 }}
@@ -180,14 +180,14 @@ const Layout = ({ children }) => {
               endIcon={<ExpandMore />}
               onClick={handleServicesMenuOpen}
               sx={{
-                color: '#4a5568',
+                color: (theme) => theme.palette.info.main,
                 fontWeight: 500,
                 transition: 'all 0.3s ease',
                 borderRadius: '8px',
                 padding: '0.5rem 1rem',
                 '&:hover': {
                   background: 'rgba(102, 126, 234, 0.1)',
-                  color: '#667eea',
+                  color: (theme) => theme.palette.primary.main,
                   transform: 'translateY(-1px)'
                 }
               }}
@@ -209,19 +209,19 @@ const Layout = ({ children }) => {
               }}
             >
               <MenuItem onClick={() => handleServiceNavigation('libros')} sx={{ py: 1.5, px: 2 }}>
-                <Book sx={{ mr: 2, color: '#667eea' }} />
+                <Book sx={{ mr: 2, color: (theme) => theme.palette.primary.main }} />
                 <Typography>Libros</Typography>
               </MenuItem>
               <MenuItem onClick={() => handleServiceNavigation('ebooks')} sx={{ py: 1.5, px: 2 }}>
-                <MenuBook sx={{ mr: 2, color: '#667eea' }} />
+                <MenuBook sx={{ mr: 2, color: (theme) => theme.palette.primary.main }} />
                 <Typography>E-books</Typography>
               </MenuItem>
               <MenuItem onClick={() => handleServiceNavigation('mercancia')} sx={{ py: 1.5, px: 2 }}>
-                <ShoppingBag sx={{ mr: 2, color: '#667eea' }} />
+                <ShoppingBag sx={{ mr: 2, color: (theme) => theme.palette.primary.main }} />
                 <Typography>Mercancía</Typography>
               </MenuItem>
               <MenuItem onClick={() => handleServiceNavigation('webinars')} sx={{ py: 1.5, px: 2 }}>
-                <School sx={{ mr: 2, color: '#667eea' }} />
+                <School sx={{ mr: 2, color: (theme) => theme.palette.primary.main }} />
                 <Typography>Webinars</Typography>
               </MenuItem>
             </Menu>
@@ -235,7 +235,7 @@ const Layout = ({ children }) => {
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   background: 'rgba(102, 126, 234, 0.1)',
-                  color: '#667eea',
+                  color: (theme) => theme.palette.primary.main,
                   transform: 'translateY(-1px) rotate(180deg)'
                 }
               }}
@@ -255,7 +255,7 @@ const Layout = ({ children }) => {
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     background: 'rgba(102, 126, 234, 0.1)',
-                    color: '#667eea',
+                    color: (theme) => theme.palette.primary.main,
                     transform: 'translateY(-1px)'
                   }
                 }}
@@ -326,7 +326,7 @@ const Layout = ({ children }) => {
                   }}
                 >
                   <MenuItem disabled sx={{ py: 1.5, px: 2 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#2d3748' }}>                    
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: (theme) => theme.palette.text.primary }}>                    
                       {user?.nombre}
                     </Typography>
                   </MenuItem>
@@ -337,7 +337,7 @@ const Layout = ({ children }) => {
                     onClick={handleProfileMenuClose}
                     sx={{ py: 1.5, px: 2 }}
                   >
-                    <Person sx={{ mr: 2, color: '#667eea' }} />
+                    <Person sx={{ mr: 2, color: (theme) => theme.palette.primary.main }} />
                     <Typography>Mi Perfil</Typography>
                   </MenuItem>
                   <MenuItem onClick={handleLogout} sx={{ py: 1.5, px: 2, color: '#e53e3e' }}>
@@ -353,14 +353,14 @@ const Layout = ({ children }) => {
                   component={Link} 
                   to="/login"
                   sx={{
-                    borderColor: '#667eea',
-                    color: '#667eea',
+                    borderColor: (theme) => theme.palette.primary.main,
+                    color: (theme) => theme.palette.primary.main,
                     borderRadius: '20px',
                     padding: '0.5rem 1.5rem',
                     fontWeight: 600,
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      borderColor: '#5a6fd8',
+                      borderColor: (theme) => theme.palette.primary.main,
                       background: 'rgba(102, 126, 234, 0.05)',
                       transform: 'translateY(-2px)'
                     }

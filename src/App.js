@@ -37,7 +37,7 @@ const AppContent = () => {
     palette: {
       mode: isDarkMode ? 'dark' : 'light',
       primary: {
-        main: '#667eea',
+        main: isDarkMode ? '#8b94f0' : '#667eea', // Más claro en modo oscuro
       },
       secondary: {
         main: '#f093fb',
@@ -48,7 +48,11 @@ const AppContent = () => {
       },
       text: {
         primary: isDarkMode ? '#ffffff' : '#2c3e50',
-        secondary: isDarkMode ? '#b0b0b0' : '#6c757d',
+        secondary: isDarkMode ? '#e0e0e0' : '#6c757d', // Más claro en modo oscuro
+      },
+      // Colores personalizados para botones y enlaces
+      info: {
+        main: isDarkMode ? '#ffffff' : '#4a5568', // Blanco en modo oscuro, gris en claro
       },
     },
     typography: {
@@ -60,6 +64,15 @@ const AppContent = () => {
           root: {
             backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
             color: isDarkMode ? '#ffffff' : '#2c3e50',
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            '&.navbar-button': {
+              color: isDarkMode ? '#ffffff' : '#4a5568',
+            },
           },
         },
       },
