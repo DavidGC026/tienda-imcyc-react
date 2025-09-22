@@ -86,6 +86,11 @@ const ProfilePage = () => {
           codigoPostal: '01030',
           municipio: 'Álvaro Obregón',
           estado: 'Ciudad de México'
+        },
+        passwords: {
+          current: '',
+          new: '',
+          confirm: ''
         }
       });
     }

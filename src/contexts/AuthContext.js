@@ -19,32 +19,38 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Limpiar localStorage al inicializar para desarrollo
-        localStorage.clear();
-        
         const token = localStorage.getItem('authToken');
-        if (token) {
+        
+        // Validar si es un JWT válido y no test-token
+        if (token && token !== 'test-token') {
           const userData = await authService.verifyToken(token);
           if (userData) {
             setUser(userData);
             setIsAuthenticated(true);
+            return;
           } else {
             localStorage.removeItem('authToken');
           }
-        } else {
-          // Usuario de prueba temporal para desarrollo
-          console.log('Estableciendo usuario de prueba...');
-          setUser({ id: 7, nombre: 'Usuario de Prueba', email: 'ruribe@imcyc.com' });
-          setIsAuthenticated(true);
-          localStorage.setItem('authToken', 'test-token');
         }
+        
+        // Usuario de prueba temporal para desarrollo
+        console.log('Estableciendo usuario de prueba...');
+        const testUser = { id: 7, nombre: 'Usuario de Prueba', email: 'ruribe@imcyc.com' };
+        setUser(testUser);
+        setIsAuthenticated(true);
+        // Usar JWT válido para el usuario de prueba
+        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJub21icmUiOiJVc3VhcmlvIGRlIFBydWViYSIsImV4cCI6MTc1ODY0MTg3N30.JKxkZ1Rr5i8FIjeYDTcm1whDWV1gm8AS6lnlfOqMhLQ';
+        localStorage.setItem('authToken', validTestToken);
+        
       } catch (error) {
         console.error('Error al inicializar autenticación:', error);
-        localStorage.removeItem('authToken');
-        // Aún así, establecer usuario de prueba
-        setUser({ id: 7, nombre: 'Usuario de Prueba', email: 'ruribe@imcyc.com' });
+        // En caso de error, establecer usuario de prueba
+        const testUser = { id: 7, nombre: 'Usuario de Prueba', email: 'ruribe@imcyc.com' };
+        setUser(testUser);
         setIsAuthenticated(true);
-        localStorage.setItem('authToken', 'test-token');
+        // Usar JWT válido para el usuario de prueba
+        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJub21icmUiOiJVc3VhcmlvIGRlIFBydWViYSIsImV4cCI6MTc1ODY0MTg3N30.JKxkZ1Rr5i8FIjeYDTcm1whDWV1gm8AS6lnlfOqMhLQ';
+        localStorage.setItem('authToken', validTestToken);
       } finally {
         setLoading(false);
       }
