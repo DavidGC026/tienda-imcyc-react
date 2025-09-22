@@ -24,7 +24,8 @@ import {
   School,
   Assignment,
   ShoppingCart,
-  LibraryBooks
+  LibraryBooks,
+  Person
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -212,7 +213,7 @@ const Layout = ({ children }) => {
                 <ShoppingBag sx={{ mr: 2, color: '#667eea' }} />
                 <Typography>Mercancía</Typography>
               </MenuItem>
-              <MenuItem onClick={() => console.log('Webinars')} sx={{ py: 1.5, px: 2 }}>
+              <MenuItem onClick={() => handleServiceNavigation('webinars')} sx={{ py: 1.5, px: 2 }}>
                 <School sx={{ mr: 2, color: '#667eea' }} />
                 <Typography>Webinars</Typography>
               </MenuItem>
@@ -305,6 +306,15 @@ const Layout = ({ children }) => {
                     </Typography>
                   </MenuItem>
                   <Divider />
+                  <MenuItem 
+                    component={Link} 
+                    to="/profile" 
+                    onClick={handleProfileMenuClose}
+                    sx={{ py: 1.5, px: 2 }}
+                  >
+                    <Person sx={{ mr: 2, color: '#667eea' }} />
+                    <Typography>Mi Perfil</Typography>
+                  </MenuItem>
                   <MenuItem onClick={handleLogout} sx={{ py: 1.5, px: 2, color: '#e53e3e' }}>
                     <Logout sx={{ mr: 2 }} />
                     <Typography>Cerrar Sesión</Typography>

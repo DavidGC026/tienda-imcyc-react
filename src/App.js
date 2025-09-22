@@ -18,6 +18,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import MiBibliotecaPage from './pages/MiBibliotecaPage';
 import EbookViewerPage from './pages/EbookViewerPage';
+import ProfilePage from './pages/ProfilePage';
 
 // Components
 import Layout from './components/layout/Layout';
@@ -62,6 +63,7 @@ function App() {
                   <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
                   <Route path="/mi-biblioteca" element={<MiBibliotecaPage />} />
                   <Route path="/ebook/:id" element={<EbookViewerPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                 </Routes>
               </Layout>
             </Router>
