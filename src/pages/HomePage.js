@@ -341,15 +341,17 @@ const HomePage = () => {
                 {/* Logo Construremates */}
                 <Box 
                   sx={{
-                    width: '70px',
-                    height: '70px',
+                    width: '140px',
+                    height: '100px',
                     margin: '0 auto 1rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     overflow: 'hidden',
-                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)'
+                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    padding: '8px'
                   }}
                 >
                   <img 
