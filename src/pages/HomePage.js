@@ -5,12 +5,14 @@ import {
   Box, 
   Button, 
   Card, 
-  CardContent
+  CardContent,
+  useTheme
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const services = [
     {
@@ -138,15 +140,19 @@ const HomePage = () => {
               key={index}
               onClick={() => handleServiceClick(service.section)}
               sx={{
-                background: 'rgba(255, 255, 255, 0.95)',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(30, 30, 30, 0.95)' 
+                  : 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                border: theme.palette.mode === 'dark' 
+                  ? '1px solid rgba(255, 255, 255, 0.1)' 
+                  : '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '20px',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 width: '100%',
-                height: '100%', // Usa toda la altura del grid
+                height: '100%',
                 overflow: 'hidden',
                 position: 'relative',
                 cursor: 'pointer',
@@ -171,7 +177,7 @@ const HomePage = () => {
                   },
                   '& .service-icon': {
                     transform: 'scale(1.1)',
-                    color: '#764ba2'
+                    color: theme.palette.primary.main
                   }
                 }
               }}
@@ -193,7 +199,7 @@ const HomePage = () => {
                     className={`service-icon ${service.icon}`}
                     sx={{
                       fontSize: '3rem',
-                      color: '#667eea',
+                      color: theme.palette.primary.main,
                       marginBottom: '1rem',
                       transition: 'all 0.3s ease',
                       display: 'block',
@@ -210,7 +216,7 @@ const HomePage = () => {
                         fontSize: '1.3rem',
                         fontWeight: 700,
                         marginBottom: '0.8rem',
-                        color: '#2c3e50',
+                        color: theme.palette.text.primary,
                         height: '1.8rem',
                         lineHeight: '1.3rem'
                       }}
@@ -221,10 +227,10 @@ const HomePage = () => {
                     <Typography 
                       variant="body2" 
                       sx={{
-                        color: '#6c757d',
+                        color: theme.palette.text.secondary,
                         fontSize: '0.9rem',
                         lineHeight: 1.4,
-                        height: '4.2rem', // Altura fija para 3 líneas
+                        height: '4.2rem',
                         overflow: 'hidden',
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
@@ -283,15 +289,19 @@ const HomePage = () => {
           <Card 
             onClick={() => window.open('https://grabador.imcyc.com/construremates/', '_blank')}
             sx={{
-              background: 'rgba(255, 255, 255, 0.95)',
+              background: theme.palette.mode === 'dark' 
+                ? 'rgba(30, 30, 30, 0.95)' 
+                : 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              border: theme.palette.mode === 'dark' 
+                ? '1px solid rgba(255, 255, 255, 0.1)' 
+                : '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: '20px',
               boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
               transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               width: '100%',
-              height: '100%', // Usa toda la altura del grid
+              height: '100%',
               overflow: 'hidden',
               position: 'relative',
               cursor: 'pointer',
@@ -359,10 +369,10 @@ const HomePage = () => {
                   <Typography 
                     variant="body2" 
                     sx={{
-                      color: '#6c757d',
+                      color: theme.palette.text.secondary,
                       fontSize: '0.9rem',
                       lineHeight: 1.4,
-                      height: '4.2rem', // Misma altura que las otras descripciones
+                      height: '4.2rem',
                       overflow: 'hidden',
                       display: '-webkit-box',
                       WebkitLineClamp: 3,
