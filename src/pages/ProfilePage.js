@@ -30,6 +30,7 @@ import {
   VisibilityOff
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import profileService from '../services/profileService';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -74,26 +75,59 @@ const ProfilePage = () => {
   ];
 
   useEffect(() => {
-    // Cargar datos del usuario actual (simulado para prueba)
-    if (user) {
-      setProfileData({
-        nombreCompleto: user.nombre || 'Usuario de Prueba',
-        telefono: '5555555555',
-        email: user.email || 'ruribe@imcyc.com',
-        direccion: {
-          calle: 'Av. Insurgentes Sur #1846',
-          colonia: 'Florida',
-          codigoPostal: '01030',
-          municipio: 'Álvaro Obregón',
-          estado: 'Ciudad de México'
-        },
-        passwords: {
-          current: '',
-          new: '',
-          confirm: ''
+    // Cargar datos del usuario actual desde la API
+    const loadProfileData = async () => {
+      if (user) {
+        try {
+          setLoading(true);
+          const profileData = await profileService.getProfile();
+          
+          setProfileData({
+            nombreCompleto: profileData.user.nombre || '',
+            telefono: profileData.user.telefono || '',
+            email: profileData.user.email || '',
+            direccion: {
+              calle: profileData.direccion.calle || '',
+              colonia: profileData.direccion.colonia || '',
+              codigoPostal: profileData.direccion.codigoPostal || '',
+              municipio: profileData.direccion.municipio || '',
+              estado: profileData.direccion.estado || ''
+            },
+            passwords: {
+              current: '',
+              new: '',
+              confirm: ''
+            }
+          });
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          setError('Error al cargar los datos del perfil');
+          
+          // Fallback con datos básicos del contexto de autenticación
+          setProfileData({
+            nombreCompleto: user.nombre || '',
+            telefono: '',
+            email: user.email || '',
+            direccion: {
+              calle: '',
+              colonia: '',
+              codigoPostal: '',
+              municipio: '',
+              estado: ''
+            },
+            passwords: {
+              current: '',
+              new: '',
+              confirm: ''
+            }
+          });
+        } finally {
+          setLoading(false);
         }
-      });
-    }
+      }
+    };
+    
+    loadProfileData();
   }, [user]);
 
   const handleInputChange = (field, value) => {
@@ -120,20 +154,49 @@ const ProfilePage = () => {
     setSuccess('');
 
     try {
-      // Aquí irá la lógica para guardar en la API
-      // await profileService.updateProfile(profileData);
+      // Preparar los datos para enviar a la API
+      const dataToUpdate = {
+        nombreCompleto: profileData.nombreCompleto,
+        telefono: profileData.telefono,
+        email: profileData.email,
+        direccion: {
+          calle: profileData.direccion.calle,
+          colonia: profileData.direccion.colonia,
+          codigoPostal: profileData.direccion.codigoPostal,
+          municipio: profileData.direccion.municipio,
+          estado: profileData.direccion.estado
+        }
+      };
       
-      // Simulación de guardado
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamar a la API para actualizar el perfil
+      const updatedData = await profileService.updateProfile(dataToUpdate);
       
       setSuccess('Perfil actualizado correctamente');
       setIsEditing(false);
+      
+      // Actualizar los datos locales con la respuesta del servidor
+      if (updatedData) {
+        setProfileData(prev => ({
+          ...prev,
+          nombreCompleto: updatedData.user.nombre || prev.nombreCompleto,
+          telefono: updatedData.user.telefono || prev.telefono,
+          email: updatedData.user.email || prev.email,
+          direccion: {
+            calle: updatedData.direccion.calle || prev.direccion.calle,
+            colonia: updatedData.direccion.colonia || prev.direccion.colonia,
+            codigoPostal: updatedData.direccion.codigoPostal || prev.direccion.codigoPostal,
+            municipio: updatedData.direccion.municipio || prev.direccion.municipio,
+            estado: updatedData.direccion.estado || prev.direccion.estado
+          }
+        }));
+      }
       
       // Limpiar mensaje después de 3 segundos
       setTimeout(() => setSuccess(''), 3000);
       
     } catch (err) {
-      setError('Error al actualizar el perfil');
+      console.error('Profile update error:', err);
+      setError(err.message || 'Error al actualizar el perfil');
     } finally {
       setLoading(false);
     }
@@ -178,11 +241,8 @@ const ProfilePage = () => {
     }
 
     try {
-      // Aquí irá la lógica para cambiar contraseña en la API
-      // await profileService.changePassword(profileData.passwords);
-      
-      // Simulación
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamar a la API para cambiar la contraseña
+      await profileService.changePassword(profileData.passwords);
       
       setSuccess('Contraseña actualizada correctamente');
       setIsChangingPassword(false);
@@ -201,7 +261,8 @@ const ProfilePage = () => {
       setTimeout(() => setSuccess(''), 3000);
       
     } catch (err) {
-      setError('Error al cambiar la contraseña');
+      console.error('Password change error:', err);
+      setError(err.message || 'Error al cambiar la contraseña');
     } finally {
       setLoading(false);
     }
