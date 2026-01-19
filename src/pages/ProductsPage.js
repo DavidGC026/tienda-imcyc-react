@@ -15,9 +15,10 @@ import {
   Chip,
   Skeleton
 } from '@mui/material';
-import { ShoppingCart, Visibility } from '@mui/icons-material';
+import { ShoppingCart, Visibility, CheckCircle } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 import { productService } from '../services/productService';
+import { ebookService } from '../services/ebookService';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -102,6 +103,7 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ownedEbooks, setOwnedEbooks] = useState([]);
 
   const sections = [
     { value: 'mercancia', label: 'Mercancía' },
@@ -112,7 +114,11 @@ const ProductsPage = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [currentSection]);
+    // Verificar ebooks poseídos si estamos en la sección de ebooks y el usuario está autenticado
+    if (currentSection === 'ebooks' && isAuthenticated) {
+      checkOwnedEbooks();
+    }
+  }, [currentSection, isAuthenticated]);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -133,6 +139,18 @@ const ProductsPage = () => {
       setLoading(false);
     }
   };
+  
+  const checkOwnedEbooks = async () => {
+    try {
+      const response = await ebookService.checkOwnedEbooks();
+      if (response.success) {
+        setOwnedEbooks(response.owned_ebooks);
+      }
+    } catch (err) {
+      console.error('Error checking owned ebooks:', err);
+      // No mostrar error al usuario, solo hacer log
+    }
+  };
 
   const handleSectionChange = (event, newValue) => {
     setCurrentSection(newValue);
@@ -144,8 +162,14 @@ const ProductsPage = () => {
       return;
     }
 
-    // Para webinars, no verificar stock tradicional
-    if (currentSection !== 'webinars' && (!product.stock || product.stock === 0)) {
+    // Verificar si el usuario ya posee este ebook
+    if (currentSection === 'ebooks' && ownedEbooks.includes(product.id)) {
+      alert('Ya posees este ebook. Puedes acceder a él desde tu biblioteca.');
+      return;
+    }
+
+    // Para webinars y ebooks, no verificar stock tradicional (siempre disponibles)
+    if (currentSection !== 'webinars' && currentSection !== 'ebooks' && (!product.stock || product.stock === 0)) {
       alert('Producto sin stock disponible');
       return;
     }
@@ -153,6 +177,12 @@ const ProductsPage = () => {
     try {
       const result = await addToCart(product.id, currentSection, 1);
       alert(`${result.productName} agregado al carrito exitosamente`);
+      
+      // Si es un ebook, actualizar la lista de ebooks poseídos después de la compra
+      if (currentSection === 'ebooks') {
+        // Nota: esto se actualizará realmente después del checkout exitoso
+        // Aquí solo evitamos que se agregue dos veces al carrito inmediatamente
+      }
     } catch (error) {
       alert(`Error: ${error.message}`);
     }
@@ -400,31 +430,53 @@ const ProductsPage = () => {
                     alignItems: 'center',
                     overflow: 'hidden'
                   }}>
-                    <Button 
-                      variant="contained" 
-                      fullWidth
-                      startIcon={<ShoppingCart />}
-                      disabled={(currentSection !== 'webinars' && currentSection !== 'ebooks') && (!product.stock || product.stock === 0) || cartLoading}
-                      onClick={() => handleAddToCart(product)}
-                      sx={{
-                        background: (currentSection === 'webinars' || currentSection === 'ebooks' || product.stock > 0)
-                          ? 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)' 
-                          : 'grey.400',
-                        fontWeight: 'bold',
-                        py: 0.8,
-                        fontSize: '0.75rem',
-                        '&:hover': {
+                    {currentSection === 'ebooks' && ownedEbooks.includes(product.id) ? (
+                      <Button 
+                        variant="contained"
+                        fullWidth
+                        startIcon={<CheckCircle />}
+                        disabled
+                        sx={{
+                          background: 'linear-gradient(45deg, #4caf50 30%, #388e3c 90%)',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          py: 0.8,
+                          fontSize: '0.75rem',
+                          '&.Mui-disabled': {
+                            background: 'linear-gradient(45deg, #4caf50 30%, #388e3c 90%)',
+                            color: 'white'
+                          }
+                        }}
+                      >
+                        Ya poseído
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="contained" 
+                        fullWidth
+                        startIcon={<ShoppingCart />}
+                        disabled={(currentSection !== 'webinars' && currentSection !== 'ebooks') && (!product.stock || product.stock === 0) || cartLoading}
+                        onClick={() => handleAddToCart(product)}
+                        sx={{
                           background: (currentSection === 'webinars' || currentSection === 'ebooks' || product.stock > 0)
-                            ? 'linear-gradient(45deg, #5a6fd8 30%, #6a42a0 90%)' 
-                            : 'grey.400'
-                        }
-                      }}
-                    >
-                      {cartLoading ? 'Agregando...' : 
-                        currentSection === 'webinars' ? 'Inscribirse' : 
-                        currentSection === 'ebooks' ? 'Descargar' : 
-                        (product.stock > 0 ? 'Agregar al Carrito' : 'Agotado')}
-                    </Button>
+                            ? 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)' 
+                            : 'grey.400',
+                          fontWeight: 'bold',
+                          py: 0.8,
+                          fontSize: '0.75rem',
+                          '&:hover': {
+                            background: (currentSection === 'webinars' || currentSection === 'ebooks' || product.stock > 0)
+                              ? 'linear-gradient(45deg, #5a6fd8 30%, #6a42a0 90%)' 
+                              : 'grey.400'
+                          }
+                        }}
+                      >
+                        {cartLoading ? 'Agregando...' : 
+                          currentSection === 'webinars' ? 'Inscribirse' : 
+                          currentSection === 'ebooks' ? 'Comprar' : 
+                          (product.stock > 0 ? 'Agregar al Carrito' : 'Agotado')}
+                      </Button>
+                    )}
                   </CardActions>
                 </Card>
             ))}

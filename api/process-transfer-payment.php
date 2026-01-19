@@ -96,8 +96,8 @@ try {
                 'product_id' => $item['product_id'] ?? $item['id'] ?? 0
             ];
             
-            // Calcular IVA (16%) solo para mercancía y ebooks
-            $aplicaIva = in_array($processedItem['section'], ['mercancia', 'ebooks']);
+            // Calcular IVA (16%) solo para mercancía
+            $aplicaIva = in_array($processedItem['section'], ['mercancia']);
             $processedItem['aplica_iva'] = $aplicaIva;
             
             $subtotalItem = $processedItem['precio'] * $processedItem['cantidad'];
@@ -127,10 +127,17 @@ try {
         // Crear line_items para Conekta
         $line_items = [];
         foreach ($items as $item) {
+            // Para Conekta, el precio unitario DEBE incluir impuestos si aplica
+            $unit_price = $item['precio'];
+            
+            if ($item['aplica_iva']) {
+                $unit_price = $unit_price * 1.16;
+            }
+            
             $line_items[] = [
                 'name' => $item['nombre'],
                 'description' => 'Producto de Tienda IMCYC - ' . ucfirst($item['section']),
-                'unit_price' => intval($item['precio'] * 100), // Conekta requiere centavos
+                'unit_price' => intval(round($unit_price * 100)), // Conekta requiere centavos
                 'quantity' => intval($item['cantidad'])
             ];
         }
@@ -224,8 +231,8 @@ try {
         // Registrar la orden en la base de datos principal
         $pdo = getDBConnection();
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, order_id_conekta, items_json, subtotal, iva, total, payment_method, status, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?, 'spei', 'pending', NOW())
+            INSERT INTO pedidos (user_id, order_id, items, total, fecha, status) 
+            VALUES (?, ?, ?, ?, NOW(), 'pending')
         ");
         
         try {
@@ -233,13 +240,12 @@ try {
                 $user_id,
                 $order_id,
                 json_encode($items),
-                $subtotal_sin_iva,
-                $total_iva,
                 $total_calculado
             ]);
+            error_log("Order registered successfully: User $user_id, Order $order_id, Total: $total_calculado");
         } catch (PDOException $e) {
-            // Si la tabla no existe, crear un log simple
-            error_log("Order registration: User $user_id, Order $order_id, Total: $total_calculado");
+            error_log("Error registering order: " . $e->getMessage());
+            // No fallar si no se puede registrar, pero logear el error
         }
 
         // Confirmar transacciones

@@ -37,22 +37,26 @@ try {
     
     $token = $matches[1];
     
-    // Para propósitos de demostración, vamos a usar un token simple
-    if ($token !== 'test-token') {
-        // Verificar token real en la base de datos
-        $stmt = $pdo->prepare("SELECT id, email FROM usuarios WHERE id = ? AND status = 'active'");
-        $stmt->execute([7]); // Por ahora usar usuario ID 7 para demostración
-        $user = $stmt->fetch();
-        
-        if (!$user) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Token inválido']);
-            exit;
-        }
-        $userId = $user['id'];
-    } else {
-        // Para token de prueba
-        $userId = 7;
+    // Verificar token JWT usando funciones de config.php
+    $decoded = verifyJWT($token);
+    
+    if ($decoded === false) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Token inválido']);
+        exit;
+    }
+    
+    $userId = $decoded['user_id'];
+    
+    // Verificar que el usuario existe y está activo
+    $stmt = $pdo->prepare("SELECT id, email FROM usuarios WHERE id = ? AND status = 'active'");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
+    
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Usuario no válido']);
+        exit;
     }
     
     // Verificar que el usuario tiene acceso al ebook usando la misma lógica que getUserAcceptedEbooks

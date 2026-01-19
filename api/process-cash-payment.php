@@ -10,6 +10,18 @@ error_reporting(E_ERROR | E_PARSE);
 ob_clean();
 ob_start();
 
+// Debug logging
+$debug_log = '/tmp/checkout_debug.log';
+function debug_log($message) {
+    global $debug_log;
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($debug_log, "[$timestamp] CASH-PAYMENT: $message\n", FILE_APPEND | LOCK_EX);
+}
+
+debug_log('=== INICIO PROCESS CASH PAYMENT ===');
+debug_log('Request method: ' . $_SERVER['REQUEST_METHOD']);
+debug_log('Request URI: ' . $_SERVER['REQUEST_URI']);
+
 // Importar archivos de conexión del sistema principal
 require_once '/var/www/html/TiendaImcyc/connection.php';
 require_once '/var/www/html/TiendaImcyc/connectionl.php';
@@ -38,10 +50,15 @@ try {
 
     // Obtener datos JSON del request
     $data = getJsonInput();
+    debug_log('Data recibida: ' . json_encode($data));
+    
     $cart_items = $data['cart_items'] ?? [];
     $subtotal = floatval($data['subtotal'] ?? 0);
     $iva = floatval($data['iva'] ?? 0);
     $total = floatval($data['total'] ?? 0);
+    
+    debug_log('Cart items count: ' . count($cart_items));
+    debug_log('Total: ' . $total);
 
     if (empty($cart_items) || $total <= 0) {
         apiError('Carrito vacío o total inválido', 400);
@@ -96,8 +113,8 @@ try {
                 'product_id' => $item['product_id'] ?? $item['id'] ?? 0
             ];
             
-            // Calcular IVA (16%) solo para mercancía y ebooks
-            $aplicaIva = in_array($processedItem['section'], ['mercancia', 'ebooks']);
+            // Calcular IVA (16%) solo para mercancía
+            $aplicaIva = in_array($processedItem['section'], ['mercancia']);
             $processedItem['aplica_iva'] = $aplicaIva;
             
             $subtotalItem = $processedItem['precio'] * $processedItem['cantidad'];
@@ -127,10 +144,17 @@ try {
         // Crear line_items para Conekta
         $line_items = [];
         foreach ($items as $item) {
+            // Para Conekta, el precio unitario DEBE incluir impuestos si aplica
+            $unit_price = $item['precio'];
+            
+            if ($item['aplica_iva']) {
+                $unit_price = $unit_price * 1.16;
+            }
+            
             $line_items[] = [
                 'name' => $item['nombre'],
                 'description' => 'Producto de Tienda IMCYC - ' . ucfirst($item['section']),
-                'unit_price' => intval($item['precio'] * 100), // Conekta requiere centavos
+                'unit_price' => intval(round($unit_price * 100)), // Conekta requiere centavos
                 'quantity' => intval($item['cantidad'])
             ];
         }
@@ -217,8 +241,8 @@ try {
         // Registrar la orden en la base de datos principal
         $pdo = getDBConnection();
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, order_id_conekta, items_json, subtotal, iva, total, payment_method, status, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?, 'cash', 'pending', NOW())
+            INSERT INTO pedidos (user_id, order_id, items, total, fecha, status) 
+            VALUES (?, ?, ?, ?, NOW(), 'pending')
         ");
         
         try {
@@ -226,13 +250,12 @@ try {
                 $user_id,
                 $order_id,
                 json_encode($items),
-                $subtotal_sin_iva,
-                $total_iva,
                 $total_calculado
             ]);
+            error_log("Order registered successfully: User $user_id, Order $order_id, Total: $total_calculado");
         } catch (PDOException $e) {
-            // Si la tabla no existe, crear un log simple
-            error_log("Order registration: User $user_id, Order $order_id, Total: $total_calculado");
+            error_log("Error registering order: " . $e->getMessage());
+            // No fallar si no se puede registrar, pero logear el error
         }
 
         // Confirmar transacciones

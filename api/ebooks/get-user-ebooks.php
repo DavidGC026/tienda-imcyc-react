@@ -1,97 +1,135 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
 require_once '../config.php';
 
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    apiError('Método no permitido', 405);
+}
+
+// Verificar autenticación
+if (!isAuthenticated()) {
+    apiError('No autorizado', 401);
+}
+
 try {
-    // Obtener conexión a la base de datos
+    $userId = getUserId();
+    if (!$userId) {
+        apiError('Usuario no válido', 401);
+    }
+    
     $pdo = getDBConnection();
     
-    // Verificar token de autorización
-    $headers = getallheaders();
-    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
+    // Obtener IDs de ebooks que posee el usuario
+    $ownedEbookIds = getOwnedEbooks($pdo, $userId);
     
-    if (empty($authHeader) || !preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Token de autorización requerido']);
-        exit;
+    if (empty($ownedEbookIds)) {
+        apiSuccess([
+            'success' => true,
+            'ebooks' => [],
+            'total' => 0
+        ]);
+        return;
     }
     
-    $token = $matches[1];
+    // Obtener detalles de los ebooks
+    $ebooksDetails = getEbooksDetails($pdo, $ownedEbookIds);
     
-    // Para propósitos de demostración, vamos a usar un token simple
-    // En producción deberías verificar el token JWT con la tabla usuarios
-    if ($token !== 'test-token') {
-        // Verificar token real en la base de datos
-        $stmt = $pdo->prepare("SELECT id, email FROM usuarios WHERE id = ? AND status = 'active'");
-        $stmt->execute([7]); // Por ahora usar usuario ID 7 para demostración
-        $user = $stmt->fetch();
-        
-        if (!$user) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Token inválido']);
-            exit;
-        }
-        $userId = $user['id'];
-    } else {
-        // Para token de prueba
-        $userId = 7;
-    }
-    
-    // Obtener ebooks del usuario usando la misma lógica que getUserAcceptedEbooks
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT e.*
-        FROM pedidos p,
-             JSON_TABLE(p.items, '$[*]' COLUMNS (
-                ebook_id INT PATH '$.ebook_id',
-                tipo VARCHAR(20) PATH '$.tipo'
-             )) AS items
-        JOIN ebooks e ON e.ebook_id = items.ebook_id
-        WHERE p.user_id = ?
-          AND p.status = 'aprobado'
-          AND items.tipo = 'ebook'
-    ");
-    $stmt->execute([$userId]);
-    $ebooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Formatear los resultados
-    $formattedEbooks = [];
-    foreach ($ebooks as $ebook) {
-        $formattedEbooks[] = [
-            'id' => (int)$ebook['ebook_id'],
-            'titulo' => $ebook['titulo'],
-            'descripcion' => $ebook['descripcion'],
-            'precio' => (float)$ebook['precio'],
-            'autor' => $ebook['autor'],
-            'imagen' => $ebook['imagen_url'] ?: null,
-            'archivo_pdf' => $ebook['archivo_url'],
-            'fecha_publicacion' => $ebook['fecha_publicacion'],
-            'categoria' => $ebook['categoria']
-        ];
-    }
-    
-    echo json_encode([
+    apiSuccess([
         'success' => true,
-        'ebooks' => $formattedEbooks,
-        'total' => count($formattedEbooks)
+        'ebooks' => $ebooksDetails,
+        'total' => count($ebooksDetails)
     ]);
     
 } catch (Exception $e) {
     error_log("Error en get-user-ebooks.php: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode([
-        'error' => 'Error interno del servidor',
-        'message' => $e->getMessage()
-    ]);
+    apiError('Error interno del servidor', 500);
+}
+
+/**
+ * Obtiene los ebooks que posee un usuario
+ */
+function getOwnedEbooks($pdo, $userId) {
+    // Buscar en pedidos aprobados/pagados
+    $sql = "SELECT items FROM pedidos 
+            WHERE user_id = ? 
+            AND (status = 'aprobado' OR status = 'paid' OR status = 'completed')
+            ORDER BY fecha DESC";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$userId]);
+    
+    $ownedEbooks = [];
+    
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if (!empty($row['items'])) {
+            $items = json_decode($row['items'], true);
+            
+            if (is_array($items)) {
+                foreach ($items as $item) {
+                    // Verificar si es un ebook - usar formato real de datos
+                    if (isset($item['tipo']) && $item['tipo'] === 'ebook') {
+                        // Usar ebook_id del formato real
+                        $ebookId = intval($item['ebook_id'] ?? 0);
+                        
+                        if ($ebookId > 0 && !in_array($ebookId, $ownedEbooks)) {
+                            $ownedEbooks[] = $ebookId;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return $ownedEbooks;
+}
+
+/**
+ * Obtiene los detalles de los ebooks especificados
+ */
+function getEbooksDetails($pdo, $ebookIds) {
+    if (empty($ebookIds)) {
+        return [];
+    }
+    
+    $placeholders = str_repeat('?,', count($ebookIds) - 1) . '?';
+    $sql = "SELECT 
+                ebook_id as id,
+                titulo,
+                autor,
+                descripcion,
+                precio,
+                imagen_url as imagen,
+                archivo_url as archivo_pdf,
+                archivo_url as pdf_filename,
+                fecha_publicacion,
+                created_at
+            FROM ebooks 
+            WHERE ebook_id IN ($placeholders)
+            ORDER BY titulo ASC";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($ebookIds);
+    
+    $ebooks = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        // Procesar la imagen
+        if (!empty($row['imagen'])) {
+            // Si la imagen es una ruta relativa, convertirla a URL completa
+            if (strpos($row['imagen'], 'http') !== 0) {
+                $row['imagen'] = '/api/uploads/' . $row['imagen'];
+            }
+        }
+        
+        // Verificar si existe el archivo PDF
+        if (!empty($row['pdf_filename'])) {
+            $pdfPath = '/var/www/html/TiendaImcyc/tienda-imcyc-react/api/ebooks/' . $row['pdf_filename'];
+            $row['archivo_pdf'] = file_exists($pdfPath) ? $row['pdf_filename'] : null;
+        } else {
+            $row['archivo_pdf'] = null;
+        }
+        
+        $ebooks[] = $row;
+    }
+    
+    return $ebooks;
 }
 ?>

@@ -1,13 +1,35 @@
 /* CheckoutPage.css - Estilos personalizados para la página de checkout */
 
-.checkout-page {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+:root {
+  --checkout-bg-light: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  --checkout-bg-dark: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+  --checkout-header-bg: linear-gradient(135deg, #ff6600 0%, #ff8533 100%);
+  --checkout-text-primary-light: #333;
+  --checkout-text-primary-dark: #ffffff;
+  --checkout-text-secondary-light: #6c757d;
+  --checkout-text-secondary-dark: #b0b0b0;
+  --checkout-paper-bg-light: #ffffff;
+  --checkout-paper-bg-dark: #1e1e1e;
+  --checkout-border-light: #e9ecef;
+  --checkout-border-dark: #333333;
+  --checkout-hover-bg-light: #f8f9fa;
+  --checkout-hover-bg-dark: #333333;
+}
+
+[data-mui-color-scheme='light'] .checkout-page {
+  background: var(--checkout-bg-light);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+[data-mui-color-scheme='dark'] .checkout-page {
+  background: var(--checkout-bg-dark);
   min-height: 100vh;
   padding-bottom: 2rem;
 }
 
 .checkout-header {
-  background: linear-gradient(135deg, #ff6600 0%, #ff8533 100%);
+  background: var(--checkout-header-bg);
   color: white;
   padding: 2rem 0;
   margin-bottom: 2rem;
@@ -34,18 +56,32 @@
 }
 
 /* Cards mejoradas */
-.checkout-card {
+[data-mui-color-scheme='light'] .checkout-card {
   border: none;
   border-radius: 15px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background: white;
+  background: var(--checkout-paper-bg-light);
   overflow: hidden;
 }
 
-.checkout-card:hover {
+[data-mui-color-scheme='dark'] .checkout-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: var(--checkout-paper-bg-dark);
+  overflow: hidden;
+}
+
+[data-mui-color-scheme='light'] .checkout-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+[data-mui-color-scheme='dark'] .checkout-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(255, 255, 255, 0.1);
 }
 
 .checkout-card-header {
@@ -66,14 +102,27 @@
 }
 
 /* Items del carrito */
-.cart-item {
+[data-mui-color-scheme='light'] .cart-item {
   padding: 1rem 0;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--checkout-border-light);
   transition: background-color 0.2s ease;
 }
 
-.cart-item:hover {
-  background-color: #f8f9fa;
+[data-mui-color-scheme='dark'] .cart-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--checkout-border-dark);
+  transition: background-color 0.2s ease;
+}
+
+[data-mui-color-scheme='light'] .cart-item:hover {
+  background-color: var(--checkout-hover-bg-light);
+  border-radius: 8px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+[data-mui-color-scheme='dark'] .cart-item:hover {
+  background-color: var(--checkout-hover-bg-dark);
   border-radius: 8px;
   padding-left: 1rem;
   padding-right: 1rem;
@@ -83,9 +132,15 @@
   border-bottom: none;
 }
 
-.cart-item h6 {
+[data-mui-color-scheme='light'] .cart-item h6 {
   font-weight: 600;
-  color: #333;
+  color: var(--checkout-text-primary-light);
+  margin-bottom: 0.5rem;
+}
+
+[data-mui-color-scheme='dark'] .cart-item h6 {
+  font-weight: 600;
+  color: var(--checkout-text-primary-dark);
   margin-bottom: 0.5rem;
 }
 

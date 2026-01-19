@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "IMCYC Biblioteca",
+  "name": "IMCYC - Biblioteca Digital",
+  "description": "Accede a tus ebooks técnicos de IMCYC sin conexión",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,8 +19,12 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/TiendaReact/",
+  "scope": "/TiendaReact/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "categories": ["education", "books"],
+  "lang": "es"
 }

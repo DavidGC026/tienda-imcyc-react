@@ -1,0 +1,13 @@
+# Denegar acceso directo a todos los archivos
+Order Allow,Deny
+Deny from all
+
+# Solo permitir acceso desde scripts PHP locales
+<Files "*.pdf">
+    Order Allow,Deny
+    Allow from 127.0.0.1
+    Allow from ::1
+    Allow from localhost
+    # Denegar acceso directo desde navegadores
+    Deny from all
+</Files>

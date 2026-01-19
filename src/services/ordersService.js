@@ -1,9 +1,10 @@
-const API_BASE_URL = 'http://localhost/TiendaImcyc/api';
+const API_BASE_URL = window.location.origin + '/TiendaReact/api';
 
 class OrdersService {
   // Obtener el token JWT del localStorage
   getAuthToken() {
-    return localStorage.getItem('authToken');
+    // Compatibilidad: usar 'token' (nuevo) o 'authToken' (legacy)
+    return localStorage.getItem('token') || localStorage.getItem('authToken');
   }
 
   // Headers por defecto para las peticiones autenticadas

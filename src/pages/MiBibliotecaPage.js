@@ -19,7 +19,7 @@ import {
   MenuBook,
   LibraryBooks,
   OpenInNew,
-  Download,
+  OfflinePin,
   CalendarToday,
   Person
 } from '@mui/icons-material';
@@ -33,6 +33,7 @@ const MiBibliotecaPage = () => {
   const [ebooks, setEbooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [offlineEbooks, setOfflineEbooks] = useState({});
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -41,7 +42,17 @@ const MiBibliotecaPage = () => {
     }
 
     loadUserEbooks();
+    loadOfflineStatus();
   }, [isAuthenticated, navigate]);
+
+  const loadOfflineStatus = () => {
+    try {
+      const offline = JSON.parse(localStorage.getItem('offlineEbooks') || '{}');
+      setOfflineEbooks(offline);
+    } catch {
+      setOfflineEbooks({});
+    }
+  };
 
   const loadUserEbooks = async () => {
     try {
@@ -50,7 +61,7 @@ const MiBibliotecaPage = () => {
       const result = await ebookService.getUserEbooks();
       
       if (result.success) {
-        setEbooks(result.ebooks);
+        setEbooks(result.ebooks || []);
       } else {
         setError(result.error);
       }
@@ -66,6 +77,37 @@ const MiBibliotecaPage = () => {
     if (ebook.archivo_pdf) {
       const viewerUrl = ebookService.getEbookViewerUrl(ebook.id, ebook.titulo);
       navigate(viewerUrl);
+    }
+  };
+
+  const handleCacheEbook = async (ebook) => {
+    try {
+      setError('');
+      
+      // Intentar usar Service Worker primero, luego fallback al método anterior
+      let result;
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        try {
+          result = await ebookService.cacheEbookWithSW(ebook.id, ebook.titulo);
+        } catch (swError) {
+          console.log('SW method failed, falling back:', swError);
+          result = await ebookService.cacheEbookForOffline(ebook.id, ebook.titulo);
+        }
+      } else {
+        result = await ebookService.cacheEbookForOffline(ebook.id, ebook.titulo);
+      }
+      
+      if (result.success) {
+        // Actualizar estado offline y mostrar mensaje de éxito
+        loadOfflineStatus();
+        console.log('Ebook guardado para lectura sin conexión');
+        // Opcional: podrías mostrar un toast o snackbar aquí
+      } else {
+        setError(`Error al preparar para lectura sin conexión: ${result.error}`);
+      }
+    } catch (err) {
+      setError('Error al preparar el ebook para lectura sin conexión');
+      console.error('Error caching ebook:', err);
     }
   };
 
@@ -186,7 +228,7 @@ const MiBibliotecaPage = () => {
         <Typography variant="h6" sx={{ opacity: 0.9 }}>
           Accede a todos tus ebooks adquiridos en cualquier momento
         </Typography>
-        {ebooks.length > 0 && (
+        {ebooks && ebooks.length > 0 && (
           <Chip 
             icon={<Book />} 
             label={`${ebooks.length} ${ebooks.length === 1 ? 'ebook' : 'ebooks'} disponibles`}
@@ -208,7 +250,7 @@ const MiBibliotecaPage = () => {
       )}
 
       {/* Ebooks grid */}
-      {ebooks.length === 0 && !error ? (
+      {(!ebooks || ebooks.length === 0) && !error ? (
         <Paper 
           sx={{ 
             textAlign: 'center', 
@@ -253,9 +295,10 @@ const MiBibliotecaPage = () => {
             }
           }}
         >
-          {ebooks.map((ebook) => (
+          {ebooks && ebooks.map((ebook) => (
             <Card 
-              sx={{ 
+              key={ebook.id}
+              sx={{
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -269,23 +312,35 @@ const MiBibliotecaPage = () => {
                 {renderEbookCover(ebook)}
                 
                 <CardContent sx={{ flexGrow: 1, p: 1.2 }}>
-                  <Typography 
-                    variant="h6" 
-                    component="h2" 
-                    gutterBottom
-                    sx={{ 
-                      fontWeight: 'bold',
-                      fontSize: '0.9rem',
-                      lineHeight: 1.2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      mb: 0.8
-                    }}
-                  >
-                    {ebook.titulo}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.8 }}>
+                    <Typography 
+                      variant="h6" 
+                      component="h2" 
+                      sx={{ 
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                        lineHeight: 1.2,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        flex: 1
+                      }}
+                    >
+                      {ebook.titulo}
+                    </Typography>
+                    {offlineEbooks[ebook.id] && (
+                      <OfflinePin 
+                        sx={{ 
+                          fontSize: 16, 
+                          color: 'success.main',
+                          flexShrink: 0,
+                          mt: 0.2
+                        }} 
+                        titleAccess="Disponible sin conexión"
+                      />
+                    )}
+                  </Box>
                   
                   {ebook.autor && (
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.4 }}>
@@ -326,22 +381,49 @@ const MiBibliotecaPage = () => {
 
                 <Divider />
 
-                <CardActions sx={{ p: 1.2, pt: 0.4 }}>
+                <CardActions sx={{ p: 1.2, pt: 0.4, display: 'flex', gap: 1 }}>
                   {ebook.archivo_pdf ? (
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      startIcon={<OpenInNew sx={{ fontSize: 14 }} />}
-                      onClick={() => handleOpenEbook(ebook)}
-                      sx={{
-                        background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                        fontWeight: 'bold',
-                        py: 0.6,
-                        fontSize: '0.8rem'
-                      }}
-                    >
-                      Leer E-book
-                    </Button>
+                    <>
+                      <Button
+                        variant="contained"
+                        startIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+                        onClick={() => handleOpenEbook(ebook)}
+                        sx={{
+                          flex: 1,
+                          background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                          fontWeight: 'bold',
+                          py: 0.6,
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        Leer
+                      </Button>
+                      <Button
+                        variant={offlineEbooks[ebook.id] ? "contained" : "outlined"}
+                        startIcon={<OfflinePin sx={{ fontSize: 14 }} />}
+                        onClick={() => handleCacheEbook(ebook)}
+                        disabled={!!offlineEbooks[ebook.id]}
+                        sx={{
+                          flex: 1,
+                          borderColor: offlineEbooks[ebook.id] ? 'success.main' : '#667eea',
+                          backgroundColor: offlineEbooks[ebook.id] ? 'success.main' : 'transparent',
+                          color: offlineEbooks[ebook.id] ? 'white' : '#667eea',
+                          fontWeight: 'bold',
+                          py: 0.6,
+                          fontSize: '0.75rem',
+                          '&:hover': {
+                            borderColor: offlineEbooks[ebook.id] ? 'success.dark' : '#764ba2',
+                            backgroundColor: offlineEbooks[ebook.id] ? 'success.dark' : 'rgba(102, 126, 234, 0.04)'
+                          },
+                          '&.Mui-disabled': {
+                            backgroundColor: 'success.main',
+                            color: 'white'
+                          }
+                        }}
+                      >
+                        {offlineEbooks[ebook.id] ? 'Guardado' : 'Sin conexión'}
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       fullWidth

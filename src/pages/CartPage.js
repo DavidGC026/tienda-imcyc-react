@@ -1,40 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
+import { useTheme } from '@mui/material/styles';
 import {
   Container,
   Typography,
-  Box,
+  Paper,
+  Grid,
   Card,
   CardContent,
   Button,
   IconButton,
-  Grid,
-  Divider,
-  Paper,
-  Alert,
+  Box,
+  Chip,
   CircularProgress,
+  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
-  Chip
+  Divider
 } from '@mui/material';
 import {
   ShoppingCart,
-  Remove,
-  Add,
-  Delete,
   RemoveShoppingCart,
+  ShoppingBag,
   ArrowBack,
-  ShoppingBag
+  Add,
+  Remove,
+  Delete
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const theme = useTheme();
   const {
     cartItems,
     totalPrice,
@@ -144,8 +146,8 @@ const CartPage = () => {
         >
           Volver
         </Button>
-        <ShoppingCart sx={{ mr: 2, color: '#667eea', fontSize: '2rem' }} />
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: '#2d3748' }}>
+        <ShoppingCart sx={{ mr: 2, color: theme.palette.primary.main, fontSize: '2rem' }} />
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
           Mi Carrito de Compras
         </Typography>
       </Box>
@@ -168,14 +170,14 @@ const CartPage = () => {
           sx={{
             p: 6,
             textAlign: 'center',
-            background: 'rgba(255, 255, 255, 0.95)',
+            backgroundColor: theme.palette.background.paper,
             borderRadius: '20px'
           }}
         >
           <RemoveShoppingCart 
-            sx={{ fontSize: '4rem', color: '#cbd5e0', mb: 2 }} 
+            sx={{ fontSize: '4rem', color: theme.palette.text.disabled, mb: 2 }} 
           />
-          <Typography variant="h5" gutterBottom sx={{ color: '#4a5568' }}>
+          <Typography variant="h5" gutterBottom sx={{ color: theme.palette.text.secondary }}>
             Tu carrito está vacío
           </Typography>
           <Typography variant="body1" color="textSecondary" paragraph>
@@ -187,13 +189,14 @@ const CartPage = () => {
             onClick={() => navigate('/products')}
             sx={{
               mt: 2,
-              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+              backgroundColor: theme.palette.primary.main,
               borderRadius: '20px',
               padding: '0.8rem 2rem',
               fontWeight: 600,
               '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
                 transform: 'translateY(-2px)',
-                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)'
+                boxShadow: `0 8px 25px ${theme.palette.primary.main}40`
               }
             }}
           >
@@ -205,7 +208,7 @@ const CartPage = () => {
           {/* Items del carrito */}
           <Grid item xs={12} md={8}>
             <Paper elevation={3} sx={{ borderRadius: '20px', overflow: 'hidden' }}>
-              <Box sx={{ p: 3, background: 'rgba(102, 126, 234, 0.05)' }}>
+              <Box sx={{ p: 3, backgroundColor: `${theme.palette.primary.main}08` }}>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   Productos ({cartItems.length})
                 </Typography>
@@ -241,7 +244,7 @@ const CartPage = () => {
                               }}
                             />
                           </Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, color: '#2d3748' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                             {item.name}
                           </Typography>
                           <Typography variant="body2" color="textSecondary">
@@ -274,13 +277,13 @@ const CartPage = () => {
                         {/* Subtotal y eliminar */}
                         <Grid item xs={12} md={3}>
                           <Box display="flex" alignItems="center" justifyContent="space-between">
-                            <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
                               ${(parseFloat(item.price) * item.quantity).toFixed(2)}
                             </Typography>
                             <IconButton
                               onClick={() => handleRemoveItem(item.id, item.section)}
                               disabled={removingItems.has(item.id)}
-                              sx={{ color: '#e53e3e' }}
+                              sx={{ color: theme.palette.error.main }}
                             >
                               {removingItems.has(item.id) ? (
                                 <CircularProgress size={20} />
@@ -308,7 +311,7 @@ const CartPage = () => {
                 top: 100
               }}
             >
-              <Box sx={{ p: 3, background: 'rgba(102, 126, 234, 0.05)' }}>
+              <Box sx={{ p: 3, backgroundColor: `${theme.palette.primary.main}08` }}>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   Resumen del Pedido
                 </Typography>
@@ -339,14 +342,15 @@ const CartPage = () => {
                   size="large"
                   sx={{
                     mb: 2,
-                    background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                    backgroundColor: theme.palette.primary.main,
                     borderRadius: '12px',
                     padding: '1rem',
                     fontWeight: 600,
                     fontSize: '1.1rem',
                     '&:hover': {
+                      backgroundColor: theme.palette.primary.dark,
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)'
+                      boxShadow: `0 8px 25px ${theme.palette.primary.main}66`
                     }
                   }}
                   onClick={() => navigate('/checkout')}
@@ -362,11 +366,11 @@ const CartPage = () => {
                     borderRadius: '12px',
                     padding: '0.8rem',
                     fontWeight: 600,
-                    color: '#e53e3e',
-                    borderColor: '#e53e3e',
+                    color: theme.palette.error.main,
+                    borderColor: theme.palette.error.main,
                     '&:hover': {
-                      borderColor: '#c53030',
-                      backgroundColor: 'rgba(229, 62, 62, 0.05)'
+                      borderColor: theme.palette.error.dark,
+                      backgroundColor: `${theme.palette.error.main}08`
                     }
                   }}
                 >

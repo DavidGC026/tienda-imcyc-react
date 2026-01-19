@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../services/authService';
@@ -9,6 +10,7 @@ const CheckoutPage = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -83,7 +85,12 @@ const CheckoutPage = () => {
 
   if (!cartItems || cartItems.length === 0) {
     return (
-      <div className="checkout-page">
+      <div className="checkout-page" style={{ 
+        background: theme.palette.mode === 'dark' 
+          ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
+          : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+        color: theme.palette.text.primary 
+      }}>
         <div className="checkout-header">
           <div className="checkout-container text-center">
             <h1>🛒 Checkout</h1>
@@ -91,12 +98,22 @@ const CheckoutPage = () => {
           </div>
         </div>
         <div className="checkout-container">
-          <div className="empty-cart">
-            <h2>🛒 Tu carrito está vacío</h2>
-            <p>Agrega algunos productos antes de proceder al pago</p>
+          <div className="empty-cart" style={{
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            boxShadow: theme.palette.mode === 'dark' 
+              ? '0 8px 25px rgba(0, 0, 0, 0.5)' 
+              : '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{ color: theme.palette.text.secondary }}>🛒 Tu carrito está vacío</h2>
+            <p style={{ color: theme.palette.text.secondary }}>Agrega algunos productos antes de proceder al pago</p>
             <button 
               className="btn btn-primary"
               onClick={() => navigate('/dashboard')}
+              style={{
+                backgroundColor: theme.palette.primary.main,
+                borderColor: theme.palette.primary.main
+              }}
             >
               <i className="bi bi-shop me-2"></i>Ir a la tienda
             </button>
@@ -107,7 +124,12 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="checkout-page">
+    <div className="checkout-page" style={{ 
+      background: theme.palette.mode === 'dark' 
+        ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'
+        : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+      color: theme.palette.text.primary 
+    }}>
       {/* Header */}
       <div className="checkout-header">
         <div className="checkout-container text-center">
@@ -120,15 +142,24 @@ const CheckoutPage = () => {
         <div className="row">
           {/* Resumen del pedido */}
           <div className="col-lg-7 mb-4">
-            <div className="checkout-card">
+            <div className="checkout-card" style={{
+              background: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              boxShadow: theme.palette.mode === 'dark' 
+                ? '0 8px 25px rgba(0, 0, 0, 0.5)' 
+                : '0 8px 25px rgba(0, 0, 0, 0.1)'
+            }}>
               <div className="checkout-card-header">
                 <h4 className="mb-0">📦 Resumen del Pedido</h4>
               </div>
               <div className="checkout-card-body">
               {cartItems.map((item) => (
-                <div key={`${item.section}-${item.product_id}`} className="cart-item row align-items-center">
+                <div key={`${item.section}-${item.product_id}`} className="cart-item row align-items-center" style={{
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  color: theme.palette.text.primary
+                }}>
                   <div className="col-md-8">
-                    <h6 className="mb-1">{item.name}</h6>
+                    <h6 className="mb-1" style={{ color: theme.palette.text.primary }}>{item.name}</h6>
                     <span className="category-badge badge bg-secondary">
                       {item.section === 'mercancia' ? '📦 Mercancía' : 
                        item.section === 'libros' ? '📚 Libro' :
@@ -139,7 +170,7 @@ const CheckoutPage = () => {
                     <span className="quantity-badge">{item.quantity}</span>
                   </div>
                   <div className="col-md-2 text-end">
-                    <div className="price-display">${(parseFloat(item.price) * item.quantity).toFixed(2)}</div>
+                    <div className="price-display" style={{ color: theme.palette.success.main }}>${(parseFloat(item.price) * item.quantity).toFixed(2)}</div>
                   </div>
                 </div>
               ))}
@@ -147,14 +178,17 @@ const CheckoutPage = () => {
               {/* Totales */}
               <div className="row mt-4">
                 <div className="col-md-6 offset-md-6">
-                  <div className="totals-table">
+                  <div className="totals-table" style={{
+                    backgroundColor: theme.palette.mode === 'dark' ? '#333333' : '#f8f9fa',
+                    color: theme.palette.text.primary
+                  }}>
                     <table className="table table-borderless">
                       <tbody>
-                        <tr className="subtotal-row">
+                        <tr className="subtotal-row" style={{ color: theme.palette.text.secondary }}>
                           <td><strong>Subtotal:</strong></td>
                           <td className="text-end"><strong>${subtotal.toFixed(2)}</strong></td>
                         </tr>
-                        <tr className="iva-row">
+                        <tr className="iva-row" style={{ color: theme.palette.text.secondary }}>
                           <td><strong>IVA (16%):</strong></td>
                           <td className="text-end"><strong>${iva.toFixed(2)}</strong></td>
                         </tr>
@@ -173,7 +207,13 @@ const CheckoutPage = () => {
 
         {/* Métodos de pago */}
         <div className="col-lg-5">
-          <div className="checkout-card">
+          <div className="checkout-card" style={{
+            background: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            boxShadow: theme.palette.mode === 'dark' 
+              ? '0 8px 25px rgba(0, 0, 0, 0.5)' 
+              : '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
             <div className="checkout-card-header">
               <h4 className="mb-0">💳 Selecciona tu método de pago</h4>
             </div>
@@ -184,6 +224,11 @@ const CheckoutPage = () => {
                 <div 
                   className={`payment-method-card ${selectedPaymentMethod === 'cash' ? 'selected-cash' : ''}`}
                   onClick={() => handlePaymentMethodSelect('cash')}
+                  style={{
+                    background: theme.palette.background.paper,
+                    borderColor: selectedPaymentMethod === 'cash' ? theme.palette.success.main : theme.palette.divider,
+                    color: theme.palette.text.primary
+                  }}
                 >
                   <div className="payment-method-header">
                     <input 
@@ -238,6 +283,11 @@ const CheckoutPage = () => {
                 <div 
                   className={`payment-method-card ${selectedPaymentMethod === 'transfer' ? 'selected-transfer' : ''}`}
                   onClick={() => handlePaymentMethodSelect('transfer')}
+                  style={{
+                    background: theme.palette.background.paper,
+                    borderColor: selectedPaymentMethod === 'transfer' ? theme.palette.primary.main : theme.palette.divider,
+                    color: theme.palette.text.primary
+                  }}
                 >
                   <div className="payment-method-header">
                     <input 
@@ -313,14 +363,18 @@ const CheckoutPage = () => {
           </div>
 
           {/* Información adicional */}
-          <div className="info-card">
+          <div className="info-card" style={{
+            backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#fff3cd',
+            borderColor: theme.palette.mode === 'dark' ? '#555' : '#f0c674',
+            color: theme.palette.text.primary
+          }}>
             <div className="card-body">
-              <h6 className="card-title">ℹ️ Información Importante</h6>
+              <h6 className="card-title" style={{ color: theme.palette.text.primary }}>ℹ️ Información Importante</h6>
               <ul className="list-unstyled mb-0">
-                <li>Mercancía y E-books incluyen IVA del 16%</li>
-                <li>Libros y Webinars están exentos de IVA</li>
-                <li>Los pedidos se procesan después de confirmar el pago</li>
-                <li>Conserva tu comprobante de pago</li>
+                <li style={{ color: theme.palette.text.secondary }}>Mercancía y E-books incluyen IVA del 16%</li>
+                <li style={{ color: theme.palette.text.secondary }}>Libros y Webinars están exentos de IVA</li>
+                <li style={{ color: theme.palette.text.secondary }}>Los pedidos se procesan después de confirmar el pago</li>
+                <li style={{ color: theme.palette.text.secondary }}>Conserva tu comprobante de pago</li>
               </ul>
             </div>
           </div>

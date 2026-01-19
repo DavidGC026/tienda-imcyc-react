@@ -19,38 +19,51 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        setLoading(true);
         
-        // Validar si es un JWT válido y no test-token
-        if (token && token !== 'test-token') {
+        // Verificar ambas posibles claves de token
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        
+        if (token) {
+          console.log('Token encontrado, verificando validez...');
+          
+          // Usar authService para verificar el token
           const userData = await authService.verifyToken(token);
+          
           if (userData) {
+            // Token válido, restaurar sesión
             setUser(userData);
             setIsAuthenticated(true);
-            return;
+            
+            // Guardar datos de usuario actualizados
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            console.log('Sesión restaurada para:', userData.email);
           } else {
+            console.log('Token inválido, limpiando localStorage');
+            // Limpiar datos inválidos
+            localStorage.removeItem('token');
             localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            setUser(null);
+            setIsAuthenticated(false);
           }
+        } else {
+          console.log('No hay token, usuario debe autenticarse');
+          setUser(null);
+          setIsAuthenticated(false);
         }
-        
-        // Usuario de prueba temporal para desarrollo
-        console.log('Estableciendo usuario de prueba...');
-        const testUser = { id: 7, nombre: 'Usuario de Prueba', email: 'ruribe@imcyc.com' };
-        setUser(testUser);
-        setIsAuthenticated(true);
-        // Usar JWT válido para el usuario de prueba
-        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJyb2wiOiJ1c3VhcmlvIiwiaWF0IjoxNzU4NTU2ODkwLCJleHAiOjE3NTkxNjE2OTB9.H8zv2SP-ewjgOU1SuaZrcZyFrkottXrulZzpTMLk7-k';
-        localStorage.setItem('authToken', validTestToken);
         
       } catch (error) {
         console.error('Error al inicializar autenticación:', error);
-        // En caso de error, establecer usuario de prueba
-        const testUser = { id: 7, nombre: 'Usuario de Prueba', email: 'ruribe@imcyc.com' };
-        setUser(testUser);
-        setIsAuthenticated(true);
-        // Usar JWT válido para el usuario de prueba
-        const validTestToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3LCJlbWFpbCI6InJ1cmliZUBpbWN5Yy5jb20iLCJyb2wiOiJ1c3VhcmlvIiwiaWF0IjoxNzU4NTU2ODkwLCJleHAiOjE3NTkxNjE2OTB9.H8zv2SP-ewjgOU1SuaZrcZyFrkottXrulZzpTMLk7-k';
-        localStorage.setItem('authToken', validTestToken);
+        // En caso de error, limpiar todo y no autenticar
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isAuthenticated');
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -67,7 +80,8 @@ export const AuthProvider = ({ children }) => {
       if (response.success) {
         setUser(response.user);
         setIsAuthenticated(true);
-        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
         return { success: true };
       } else {
         return { success: false, error: response.error };
@@ -88,7 +102,8 @@ export const AuthProvider = ({ children }) => {
       if (response.success) {
         setUser(response.user);
         setIsAuthenticated(true);
-        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
         return { success: true };
       } else {
         return { success: false, error: response.error };
@@ -104,7 +119,10 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem('token');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
   };
 
   const value = {
